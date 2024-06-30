@@ -13,10 +13,12 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
+import ru.kata.spring.boot_security.demo.service.UserServiceImpl;
 
 import javax.naming.AuthenticationException;
 import java.security.Principal;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 @Controller
@@ -24,6 +26,7 @@ import java.util.*;
 public class AdminController {
     private final UserService userService;
     private final RoleService roleService;
+    private static Logger log = Logger.getLogger(UserServiceImpl.class.getName());
 
     public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
@@ -33,6 +36,7 @@ public class AdminController {
     @GetMapping("/users")
     public String showAllUsers(Model model) {
         model.addAttribute("users", userService.getAllUsers());
+        log.info("Show all users");
         return "index";
     }
 
@@ -44,6 +48,7 @@ public class AdminController {
         model.addAttribute("users", users);
         List<Role> roles = roleService.getRolesList();
         model.addAttribute("allRoles", roles);
+        log.info("Show user");
         return "admin";
     }
 
@@ -51,6 +56,7 @@ public class AdminController {
     public String addUserForm(@ModelAttribute("user") User user, Model model) {
         List<Role> roles = roleService.getRolesList();
         model.addAttribute("allRoles", roles);
+        log.info("Add user form");
         return "form";
     }
 
@@ -58,8 +64,8 @@ public class AdminController {
     public String saveUser(@ModelAttribute("user") User user,
                            @RequestParam("authorities") List<String> values) throws AuthenticationException {
         Set<Role> roleSet = roleService.getSetOfRoles(values);
-        user.setRoles(roleSet);
-        userService.createUser(user);
+        userService.createUser(user, roleSet);
+        log.info("Save user");
         return "redirect:/admin/users";
     }
 
@@ -67,15 +73,8 @@ public class AdminController {
     public String editUser(@ModelAttribute("user") User user,
                            @RequestParam List<String> role) throws AuthenticationException {
         Set<Role> roleSet = roleService.getSetOfRoles(role);
-        user.setRoles(roleSet);
-        userService.updateUser(user);
-
-        return "redirect:/admin/users";
-    }
-
-    @GetMapping("/delete")
-    public String deleteUser(@RequestParam(value = "id", required = true, defaultValue = "") long id) {
-        User user = userService.deleteUser(id);
+        userService.updateUser(user, roleSet);
+        log.info("Edit user");
         return "redirect:/admin/users";
     }
 
@@ -91,13 +90,14 @@ public class AdminController {
         //
         List<Role> roles = roleService.getRolesList();
         model.addAttribute("allRoles", roles);
+        log.info("Edit user form");
         return "edit";
     }
 
     @PostMapping(value = "/delete")
     public String deleteUser(@RequestParam Long id) {
         userService.deleteUser(id);
-
+        log.info("Delete user");
         return "redirect:/admin";
     }
 }

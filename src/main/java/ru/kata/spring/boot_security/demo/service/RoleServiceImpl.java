@@ -8,11 +8,11 @@ import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 @Service
 @Transactional
 public class RoleServiceImpl implements RoleService {
-
     private final RoleRepository roleRepository;
 
     public RoleServiceImpl(RoleRepository roleRepository) {
